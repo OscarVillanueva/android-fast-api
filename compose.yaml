@@ -1,0 +1,49 @@
+services:
+  proxy:
+    container_name: router
+    image: traefik:v2.11
+    command: --providers.docker
+    ports:
+      - 80:80
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  backend:
+    container_name: fast-api-app
+    build:
+      context: .
+    develop:
+      watch:
+        - path: ./main.py
+          action: rebuild
+          target: ./main.py
+    depends_on:
+      mysql:
+        condition: service_healthy
+    labels:
+      traefik.http.routers.backend.rule: Host(`localhost`) && PathPrefix(`/api`)
+      traefik.http.services.backend.loadbalancer.server.port: 8000
+
+  mysql:
+    container_name: mysql-service
+    image: mysql:8.0
+    volumes:
+      - todo-mysql-data:/var/lib/mysql
+    env_file:
+      - ./db/db.env
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin
+    env_file:
+      - ./db/db.env
+    labels:
+      traefik.http.routers.phpmyadmin.rule: Host(`db.localhost`)
+      traefik.http.services.phpmyadmin.loadbalancer.server.port: 80
+
+volumes:
+  todo-mysql-data:
