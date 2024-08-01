@@ -1,19 +1,24 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from api.src.models.CreateUserModel import CreateUserModel
+from api.src.db.config.connection import get_db
+
+from api.src.db.models.UserDTO import UserDTO
 
 app = FastAPI()
 
-@app.get("/api")
-async def root():
-    return {"message": "Hello World"}
+@app.get('/')
+def root():
+    return "Hello World"
 
-@app.get("/api/test")
-async def root():
-    return {"message": "Hello Test"}
+@app.get("/create-user")
+async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
 
-@app.get("/api/python")
-async def root():
-    return {"message": "Hello Python - 2"}
+    userDTO = UserDTO()
+    userDTO.username = user.username
+    userDTO.password = user.password
 
-@app.get("/api/docker")
-async def root():
-    return {"message": "Hello docker"}
+    db.add(userDTO)
+    await db.commit()
+    await db.refresh(userDTO)
+    return userDTO
