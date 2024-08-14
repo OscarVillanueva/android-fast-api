@@ -11,14 +11,14 @@ services:
   backend:
     container_name: fast-api-app
     build:
-      context: .
+      context: ./
     env_file:
-      - .env
+      - ./api/.env
     develop:
       watch:
-        - path: ./main.py
+        - path: ./api/src/main.py
           action: rebuild
-          target: ./main.py
+          target: ./api/src/main.py
     depends_on:
       mysql:
         condition: service_healthy
