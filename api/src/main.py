@@ -4,14 +4,16 @@ import os
 from typing import Annotated
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, Header
+from fastapi import FastAPI, Depends, Header, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from api.src.models.CreateUserModel import CreateUserModel
 from api.src.models.CreateTodoParam import CreateTodoParam
+from api.src.models.UpdateTodoParam import UpdateTodoParam
 from api.src.db.config.connection import get_db
 from api.src.db.models.UserDTO import UserDTO
 from api.src.db.models.TodoDTO import TodoDTO
 from sqlalchemy.future import select
+from sqlalchemy import update
 
 print("stating")
 load_dotenv()
@@ -107,6 +109,8 @@ async def root(todo: CreateTodoParam,authorization: Annotated[str, Header()], db
         await db.commit()
         await db.refresh(todoDTO)
 
+        db.close()
+
         return { "id": todoDTO.id, "todo": todoDTO.todo}
     except Exception as error:
         print(error)
@@ -114,3 +118,43 @@ async def root(todo: CreateTodoParam,authorization: Annotated[str, Header()], db
             "message": "An error occurred while creating a todo",
             "description": str(error)
         }    
+
+@app.put('/todo/{todo_id}')
+async def root(
+    todo_id: Annotated[int, Path(title="The ID of the todo to update", ge=0, le=10000)], 
+    authorization: Annotated[str, Header()],
+    status: UpdateTodoParam,
+    db: AsyncSession = Depends(get_db)
+):
+    if("Bearer" not in authorization):
+        return {
+            "message": "Missing authorization header"
+        }
+   
+    try:
+        result = await db.execute(select(TodoDTO).where(TodoDTO.id == todo_id))
+        
+        dbTodo = result.scalar_one_or_none()
+
+        if (dbTodo == None):
+            return {
+                "message": "The todo do not exist"
+            }
+
+        result = await db.execute(
+            update(TodoDTO)
+                .where(TodoDTO.id == todo_id)
+                .values(is_completed=status.status)
+        )
+
+        await db.commit()
+        await db.refresh(dbTodo)
+        await db.close()
+
+        return dbTodo 
+         
+    except Exception as error:
+        return {
+            "message": "An error occurred while updating the todo",
+            "description": str(error)
+        }
