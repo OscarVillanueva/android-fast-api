@@ -13,7 +13,7 @@ from api.src.db.config.connection import get_db
 from api.src.db.models.UserDTO import UserDTO
 from api.src.db.models.TodoDTO import TodoDTO
 from sqlalchemy.future import select
-from sqlalchemy import update
+from sqlalchemy import update, delete, and_
 
 print("stating")
 load_dotenv()
@@ -24,7 +24,7 @@ app = FastAPI()
 def root():
     return "Hello World"
 
-@app.get("/create-user")
+@app.post("/create-user")
 async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
     try: 
         userDTO = UserDTO()
@@ -86,6 +86,37 @@ async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
             "description": str(error)
         }
 
+@app.get('/todo')
+async def root(authorization: Annotated[str, Header()], db: AsyncSession = Depends(get_db)):
+    if("Bearer" not in authorization):
+        return {
+            "message": "Missing authorization header"
+        }
+
+    try:
+        secret = os.getenv("JWT_SECRET")
+        token = jwt.decode(authorization.replace("Bearer ", ""), secret, algorithms=["HS256"]) 
+
+        if not token["id"]:
+            raise Exception("Invalid token")
+        
+        result = await db.execute(select(TodoDTO).where(TodoDTO.belong_to == token["id"]))
+
+        await db.close()
+
+        todos = result.scalars().all()
+
+        return [
+            {"id": todo.id, "todo": todo.todo, "is_completed": todo.is_completed, "belong_to": todo.belong_to} for todo in todos
+        ]
+
+    except Exception as error:
+        print(error)
+        return { 
+            "message": "An error occurred while creating a todo",
+            "description": str(error)
+        }
+ 
 @app.post('/todo')
 async def root(todo: CreateTodoParam,authorization: Annotated[str, Header()], db: AsyncSession = Depends(get_db)):
     if("Bearer" not in authorization):
@@ -132,6 +163,9 @@ async def root(
         }
    
     try:
+        secret = os.getenv("JWT_SECRET")
+        jwt.decode(authorization.replace("Bearer ", ""), secret, algorithms=["HS256"])
+        
         result = await db.execute(select(TodoDTO).where(TodoDTO.id == todo_id))
         
         dbTodo = result.scalar_one_or_none()
@@ -156,5 +190,54 @@ async def root(
     except Exception as error:
         return {
             "message": "An error occurred while updating the todo",
+            "description": str(error)
+        }
+        
+@app.delete('/todo/{todo_id}')
+async def root(
+    todo_id: Annotated[int, Path(title="The ID of the todo to update", ge=0, le=10000)], 
+    authorization: Annotated[str, Header()],
+    db: AsyncSession = Depends(get_db)
+):
+    if("Bearer" not in authorization):
+        return {
+            "message": "Missing authorization header"
+        }
+    
+    try:
+        secret = os.getenv("JWT_SECRET")
+        token = jwt.decode(authorization.replace("Bearer ", ""), secret, algorithms=["HS256"]) 
+
+        if not token["id"]:
+            raise Exception("Invalid token")
+                
+        result = await db.execute(select(TodoDTO).where(TodoDTO.id == todo_id))
+        
+        dbTodo = result.scalar_one_or_none()
+
+        if (dbTodo == None):
+            return {
+                "message": "The todo do not exist"
+            }
+
+        result = await db.execute(
+            delete(TodoDTO)
+                .where(
+                    and_(
+                        TodoDTO.id == todo_id,
+                        TodoDTO.belong_to == token['id']
+                    )
+                )
+        )
+
+        await db.commit()
+        await db.close()
+
+        return {
+            "message": "The todo was successfully deleted"
+        }
+    except Exception as error:
+        return {
+            "message": "An error occurred while deleting the todo",
             "description": str(error)
         }
