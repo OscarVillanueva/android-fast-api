@@ -45,7 +45,7 @@ async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
             "description": str(error)
         }
     
-@app.get("/login")
+@app.post("/login")
 async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
     try:
         result = await db.execute(select(UserDTO).where(UserDTO.username == user.username))
