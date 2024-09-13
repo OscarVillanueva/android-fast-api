@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="main_image">https://api.dicebear.com/9.x/shapes/svg?seed=Abby</string>
+</resources>
