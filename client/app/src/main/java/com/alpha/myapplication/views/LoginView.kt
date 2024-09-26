@@ -1,6 +1,5 @@
 package com.alpha.myapplication.views
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +23,7 @@ import com.alpha.myapplication.R
 import com.alpha.myapplication.components.AlphaPrimaryButton
 import com.alpha.myapplication.components.AlphaTextField
 import com.alpha.myapplication.routes.CreateAccountRoute
+import com.alpha.myapplication.routes.HomeRoute
 
 @Composable
 fun LoginForm(modifier: Modifier = Modifier, navController: NavController) {
@@ -74,7 +73,7 @@ fun LoginForm(modifier: Modifier = Modifier, navController: NavController) {
             title = "Log in",
             modifier = modifier.padding(horizontal = 0.dp, vertical = 16.dp)
         ) {
-            Log.d("Login Form", "login click")
+            navController.navigate(HomeRoute)
         }
 
         TextButton(onClick = {

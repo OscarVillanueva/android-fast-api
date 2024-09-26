@@ -13,9 +13,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.alpha.myapplication.routes.CreateAccountRoute
+import com.alpha.myapplication.routes.HomeRoute
 import com.alpha.myapplication.routes.LoginFormRoute
 import com.alpha.myapplication.ui.theme.MyApplicationTheme
 import com.alpha.myapplication.views.CreateAccountActivity
+import com.alpha.myapplication.views.HomeView
 import com.alpha.myapplication.views.LoginForm
 
 class MainActivity : ComponentActivity() {
@@ -44,6 +46,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable<CreateAccountRoute> {
                         CreateAccountActivity(navController = navController)
+                    }
+                    composable<HomeRoute> {
+                        HomeView(navController = navController)
                     }
                 }
 

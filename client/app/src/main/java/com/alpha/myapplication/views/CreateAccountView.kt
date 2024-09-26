@@ -1,8 +1,6 @@
 package com.alpha.myapplication.views
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -22,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -120,12 +120,21 @@ fun CreateAccountActivity(navController: NavController) {
                     repeatedPassword = it
                 }
 
-                Row (
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 0.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.Center
+                Column (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 0.dp, vertical = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     AlphaPrimaryButton(title = "Create Account") {
                         navController.navigate(LoginFormRoute)
+                    }
+
+                    TextButton(onClick = { navController.navigate(LoginFormRoute) }) {
+                        Text(
+                            text = "I have an account",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
                 }
             }
