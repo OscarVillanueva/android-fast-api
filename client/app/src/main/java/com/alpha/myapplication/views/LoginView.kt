@@ -1,6 +1,5 @@
 package com.alpha.myapplication.views
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,12 +9,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -33,7 +34,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LoginForm(modifier: Modifier = Modifier, navController: NavController) {
-    val controller = LoginController()
+    val controller = LoginController(LocalContext.current)
 
     val scope: CoroutineScope by lazy {
         CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -46,16 +47,15 @@ fun LoginForm(modifier: Modifier = Modifier, navController: NavController) {
     var password by remember {
         mutableStateOf("")
     }
-
-    fun handleHello() {
+    
+    LaunchedEffect(Unit) {
         scope.launch {
-            controller.getHelloWorld().fold({
-                Log.d("handleHello", it)
-            } , {
-                println(it)
-            })
+            controller.isValidLoginAvailable().fold({
+                navController.navigate(HomeRoute)
+            }, {})
         }
     }
+
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
@@ -95,8 +95,13 @@ fun LoginForm(modifier: Modifier = Modifier, navController: NavController) {
             title = "Log in",
             modifier = modifier.padding(horizontal = 0.dp, vertical = 16.dp)
         ) {
-//            navController.navigate(HomeRoute)
-            handleHello()
+            scope.launch {
+                controller.login(username, password).fold({
+                    navController.navigate(HomeRoute)
+                } , {
+                    println(it)
+                })
+            }
         }
 
         TextButton(onClick = {
