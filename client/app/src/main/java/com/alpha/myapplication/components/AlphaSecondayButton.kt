@@ -5,17 +5,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.alpha.myapplication.ui.theme.alphaPrimaryButton
+import com.alpha.myapplication.ui.theme.alphaSecondaryButton
 
 @Composable
-fun AlphaPrimaryButton(
+fun AlphaSecondaryButton(
     title: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Button(
         modifier = modifier,
-        colors = alphaPrimaryButton(),
+        colors = alphaSecondaryButton(),
         onClick = { onClick() }) {
         Text(
             text = title,
@@ -23,3 +23,5 @@ fun AlphaPrimaryButton(
         )
     }
 }
+
+

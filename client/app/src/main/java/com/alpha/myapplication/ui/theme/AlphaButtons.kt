@@ -8,3 +8,8 @@ import androidx.compose.ui.graphics.Color
 fun alphaPrimaryButton() = ButtonDefaults.buttonColors(
     containerColor = Color(0xFF831DF5),
 )
+
+@Composable
+fun alphaSecondaryButton() = ButtonDefaults.buttonColors(
+    containerColor = Color(0xFF25262E),
+)
