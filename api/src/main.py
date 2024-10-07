@@ -61,10 +61,11 @@ async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
 
         if bcrypt.checkpw(user.password.encode('utf-8'), hashed_password): 
 
+            exp = datetime.now(tz=timezone.utc) + timedelta(days = 1) 
             secret = os.getenv("JWT_SECRET")
             token = jwt.encode(
                 {
-                    "exp": datetime.now(tz=timezone.utc) + timedelta(days = 1),
+                    "exp": exp,
                     "id": dbUser.id,
                     "username": dbUser.username,
                 }, 
@@ -73,7 +74,8 @@ async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
             )
 
             return {
-                "jwt": token,
+                "exp": exp,
+                "token": token,
             }
         else:
             return {
