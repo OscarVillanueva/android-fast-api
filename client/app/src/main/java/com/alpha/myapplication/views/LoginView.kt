@@ -47,15 +47,6 @@ fun LoginForm(modifier: Modifier = Modifier, navController: NavController) {
     var password by remember {
         mutableStateOf("")
     }
-    
-    LaunchedEffect(Unit) {
-        scope.launch {
-            controller.isValidLoginAvailable().fold({
-                navController.navigate(HomeRoute)
-            }, {})
-        }
-    }
-
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
