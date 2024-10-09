@@ -24,17 +24,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alpha.myapplication.R
-import com.alpha.myapplication.controller.SplashController
 import com.alpha.myapplication.dataStore
 import com.alpha.myapplication.factories.SplashViewModelFactory
 import com.alpha.myapplication.routes.HomeRoute
 import com.alpha.myapplication.routes.LoginFormRoute
+import com.alpha.myapplication.types.SplashStates
 import com.alpha.myapplication.viewModel.SplashViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import javax.xml.transform.Result
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -43,18 +38,17 @@ fun SplashView(
     splashViewModel: SplashViewModel = viewModel(factory = SplashViewModelFactory(LocalContext.current.dataStore))
 ) {
     val splashState by splashViewModel.splashState.collectAsState()
-    val r = false
 
     LaunchedEffect(Unit) {
         splashViewModel.isValidToken()
     }
 
     LaunchedEffect(splashState) {
-        splashState.fold({
-            navController.navigate(HomeRoute)
-        } , {
-            navController.navigate(LoginFormRoute)
-        })
+        when(splashState) {
+            SplashStates.LOADING -> { }
+            SplashStates.LOGIN -> navController.navigate(LoginFormRoute)
+            SplashStates.HOME -> navController.navigate(HomeRoute)
+        }
     }
 
     Surface(

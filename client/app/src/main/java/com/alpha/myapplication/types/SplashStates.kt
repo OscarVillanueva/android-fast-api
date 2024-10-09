@@ -1,4 +1,4 @@
-package com.alpha.myapplication.utils
+package com.alpha.myapplication.types
 
 enum class SplashStates {
     LOADING,

@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpha.myapplication.models.responses.LoginResponse
-import com.alpha.myapplication.utils.SplashStates
+import com.alpha.myapplication.types.SplashStates
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -19,8 +19,8 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 class SplashViewModel(private val dataStore: DataStore<Preferences>): ViewModel() {
-    private val _splashState = MutableStateFlow<Result<SplashStates>>(Result.success(SplashStates.LOADING))
-    val splashState: StateFlow<Result<SplashStates>> = _splashState
+    private val _splashState = MutableStateFlow(SplashStates.LOADING)
+    val splashState: StateFlow<SplashStates> = _splashState
 
     private suspend fun getToken(): LoginResponse {
         return dataStore.data
@@ -53,7 +53,7 @@ class SplashViewModel(private val dataStore: DataStore<Preferences>): ViewModel(
                 val token = getToken()
 
                 if (token.exp == "") {
-                    _splashState.value = Result.failure(Throwable(message = "Invalid Token"))
+                    _splashState.value = SplashStates.LOGIN
                     return@launch
                 }
 
@@ -61,14 +61,14 @@ class SplashViewModel(private val dataStore: DataStore<Preferences>): ViewModel(
                 val currentDate = ZonedDateTime.now()
 
                 if (expirationDate.isBefore(currentDate)) {
-                    _splashState.value = Result.failure(Throwable(message = "Invalid Token"))
+                    _splashState.value = SplashStates.LOGIN
                     return@launch
                 }
 
-                _splashState.value = Result.success(SplashStates.HOME)
+                _splashState.value = SplashStates.HOME
 
             } catch (e: Exception) {
-                _splashState.value = Result.failure(e)
+                _splashState.value = SplashStates.LOGIN
             }
         }
     }
