@@ -1,10 +1,10 @@
 package com.alpha.myapplication.controller
 
-import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.alpha.myapplication.dataStore
 import com.alpha.myapplication.models.responses.LoginResponse
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -12,9 +12,9 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-class SplashController(private val context: Context) {
+class SplashController(private val dataStore: DataStore<Preferences>) {
     private suspend fun getToken(): LoginResponse {
-        return context.dataStore.data
+        return dataStore.data
             .map { settings ->
                 LoginResponse(
                     token = settings[stringPreferencesKey("token")].orEmpty(),

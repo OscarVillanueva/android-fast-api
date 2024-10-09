@@ -13,37 +13,48 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alpha.myapplication.R
 import com.alpha.myapplication.controller.SplashController
+import com.alpha.myapplication.dataStore
+import com.alpha.myapplication.factories.SplashViewModelFactory
 import com.alpha.myapplication.routes.HomeRoute
 import com.alpha.myapplication.routes.LoginFormRoute
+import com.alpha.myapplication.viewModel.SplashViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import javax.xml.transform.Result
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun SplashView(navController: NavController) {
-    val controller = SplashController(LocalContext.current)
-
-    val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+fun SplashView(
+    navController: NavController,
+    splashViewModel: SplashViewModel = viewModel(factory = SplashViewModelFactory(LocalContext.current.dataStore))
+) {
+    val splashState by splashViewModel.splashState.collectAsState()
+    val r = false
 
     LaunchedEffect(Unit) {
-        scope.launch {
-            controller.isValidToken().fold({
-                navController.navigate(HomeRoute)
-            }, {
-                navController.navigate(LoginFormRoute)
-            })
-        }
+        splashViewModel.isValidToken()
+    }
+
+    LaunchedEffect(splashState) {
+        splashState.fold({
+            navController.navigate(HomeRoute)
+        } , {
+            navController.navigate(LoginFormRoute)
+        })
     }
 
     Surface(
@@ -68,5 +79,4 @@ fun SplashView(navController: NavController) {
             )
         }
     }
-
 }

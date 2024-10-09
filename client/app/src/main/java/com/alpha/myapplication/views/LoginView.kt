@@ -25,6 +25,7 @@ import com.alpha.myapplication.R
 import com.alpha.myapplication.components.AlphaPrimaryButton
 import com.alpha.myapplication.components.AlphaTextField
 import com.alpha.myapplication.controller.LoginController
+import com.alpha.myapplication.dataStore
 import com.alpha.myapplication.routes.CreateAccountRoute
 import com.alpha.myapplication.routes.HomeRoute
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +35,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LoginForm(modifier: Modifier = Modifier, navController: NavController) {
-    val controller = LoginController(LocalContext.current)
+    val controller = LoginController(LocalContext.current.dataStore)
 
     val scope: CoroutineScope by lazy {
         CoroutineScope(SupervisorJob() + Dispatchers.Main)
