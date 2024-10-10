@@ -1,5 +1,6 @@
 package com.alpha.myapplication.views
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -44,6 +45,7 @@ fun LoginForm(
     loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(LocalContext.current.dataStore))
 ) {
 
+    val context = LocalContext.current
     val loginState by loginViewModel.loginState.collectAsState()
 
     var username by remember {
@@ -55,8 +57,23 @@ fun LoginForm(
     }
 
     LaunchedEffect(loginState) {
-        if (loginState == LoginStates.SUCCESS) {
-            navController.navigate(HomeRoute)
+        when(loginState) {
+            LoginStates.INVALID_CREDENTIALS -> {
+                Toast.makeText(
+                    context,
+                    "Invalid username or password",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            LoginStates.SUCCESS -> navController.navigate(HomeRoute)
+            LoginStates.FAILURE -> {
+                Toast.makeText(
+                    context,
+                    "An error occurs please try again",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            else -> {}
         }
     }
 

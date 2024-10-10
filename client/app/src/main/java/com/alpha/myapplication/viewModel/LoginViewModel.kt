@@ -1,5 +1,6 @@
 package com.alpha.myapplication.viewModel
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -12,6 +13,8 @@ import com.alpha.myapplication.types.LoginStates
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.net.HttpRetryException
 
 class LoginViewModel(private val dataStore: DataStore<Preferences>): ViewModel() {
     
@@ -31,8 +34,18 @@ class LoginViewModel(private val dataStore: DataStore<Preferences>): ViewModel()
                     settings[stringPreferencesKey(name = "exp")] = loginResponse.exp
                 }
 
+                Log.d("Login", "Pase")
+
                 _loginState.value = LoginStates.SUCCESS
-            } catch (e: Exception) {
+            }
+            catch (e: HttpException) {
+                if (e.code() == 422) {
+                    _loginState.value = LoginStates.INVALID_CREDENTIALS
+                }
+                else _loginState.value = LoginStates.FAILURE
+            }
+            catch (e: Exception) {
+                Log.d("Login", "falle")
                 _loginState.value = LoginStates.FAILURE
             }
         }
