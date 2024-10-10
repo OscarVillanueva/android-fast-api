@@ -4,7 +4,7 @@ import os
 from typing import Annotated
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, Header, Path
+from fastapi import FastAPI, Depends, Header, Path, status, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from api.src.models.CreateUserModel import CreateUserModel
 from api.src.models.CreateTodoParam import CreateTodoParam
@@ -45,14 +45,15 @@ async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
             "description": str(error)
         }
     
-@app.post("/login")
-async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
+@app.post("/login", status_code = 200)
+async def root(user: CreateUserModel, response: Response, db: AsyncSession = Depends(get_db)):
     try:
         result = await db.execute(select(UserDTO).where(UserDTO.username == user.username))
         
         dbUser = result.scalar_one_or_none()
 
         if (dbUser == None):
+            response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
             return {
                 "message": "Username or password incorrect"
             }
@@ -78,15 +79,17 @@ async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
                 "token": token,
             }
         else:
+            response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
             return {
-                "message": "Username or password incorrect"
+                "message": "Invalid username or password"
             }
+            
 
     except Exception as error:
-        return {
-            "message": "An error occurred while logging in",
-            "description": str(error)
-        }
+        raise HTTPException (
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail= str(error)
+        ) 
 
 @app.get('/todo')
 async def root(authorization: Annotated[str, Header()], db: AsyncSession = Depends(get_db)):
