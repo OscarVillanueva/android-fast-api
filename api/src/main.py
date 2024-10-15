@@ -29,13 +29,13 @@ def root():
 async def root(user: CreateUserModel, response: Response,db: AsyncSession = Depends(get_db)):
     try: 
 
-        if len(user.username) < 5:
+        if len(user.username.strip()) < 5:
             response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
             return {
                 "message": "The min length of the username is not enough"
             } 
         
-        if len(user.password) < 8:
+        if len(user.password.strip()) < 8:
             response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
             return {
                 "message": "The min length of the password is mot enough"
