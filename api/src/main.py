@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, Header, Path, status, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from api.src.models.CreateUserModel import CreateUserModel
 from api.src.models.CreateTodoParam import CreateTodoParam
 from api.src.models.UpdateTodoParam import UpdateTodoParam
@@ -24,9 +25,22 @@ app = FastAPI()
 def root():
     return "Hello World"
 
-@app.post("/create-user")
-async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
+@app.post("/create-user", status_code = 200)
+async def root(user: CreateUserModel, response: Response,db: AsyncSession = Depends(get_db)):
     try: 
+
+        if len(user.username) < 5:
+            response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+            return {
+                "message": "The min length of the username is not enough"
+            } 
+        
+        if len(user.password) < 8:
+            response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+            return {
+                "message": "The min length of the password is mot enough"
+            }
+
         userDTO = UserDTO()
         userDTO.username = user.username
         pwd = bcrypt.hashpw(user.password.encode("utf-8"), bcrypt.gensalt())
@@ -39,7 +53,15 @@ async def root(user: CreateUserModel, db: AsyncSession = Depends(get_db)):
             "id": userDTO.id,
             "username": userDTO.username,
         }
+
+    except IntegrityError as e:
+        response.status_code = status.HTTP_409_CONFLICT
+        return {
+            "message": "Invalid username"
+        }
+
     except Exception as error:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return {
             "message": "An error occurred while creating the user",
             "description": str(error)
