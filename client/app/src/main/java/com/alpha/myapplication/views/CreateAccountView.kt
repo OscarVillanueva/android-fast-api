@@ -17,36 +17,34 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alpha.myapplication.components.AlphaErrorLabel
 import com.alpha.myapplication.components.AlphaPrimaryButton
 import com.alpha.myapplication.components.AlphaTextField
+import com.alpha.myapplication.factories.CreateAccountVMFactory
 import com.alpha.myapplication.routes.LoginFormRoute
+import com.alpha.myapplication.viewModel.CreateAccountViewModel
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
 
 @OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
-fun CreateAccountActivity(navController: NavController) {
+fun CreateAccountActivity(
+    navController: NavController,
+    createAccountViewModel: CreateAccountViewModel = viewModel(factory = CreateAccountVMFactory())
+) {
 
-    var isFirstRenderUsername by remember {
-        mutableStateOf(true)
-    }
-
-    var isUsernameValid by remember {
-        mutableStateOf(Pair(false, ""))
-    }
+    val validationSchema by createAccountViewModel.validationSchema.collectAsState()
 
     var username by remember {
         mutableStateOf("")
@@ -58,31 +56,6 @@ fun CreateAccountActivity(navController: NavController) {
 
     var repeatedPassword by remember {
         mutableStateOf("")
-    }
-
-    LaunchedEffect(Unit) {
-        snapshotFlow { username }
-            .debounce(500L)
-            .collect {
-                if(isFirstRenderUsername) {
-                    isFirstRenderUsername = false
-                    return@collect
-                }
-
-                isUsernameValid = when {
-                    it.trim().isEmpty() -> {
-                        Pair(false, "The username is required")
-                    }
-
-                    it.length < 5 -> {
-                        Pair(false, "The username is not long enough")
-                    }
-
-                    else -> {
-                        Pair(true, "")
-                    }
-                }
-            }
     }
 
     Scaffold(
@@ -127,10 +100,12 @@ fun CreateAccountActivity(navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     username = it
+                    createAccountViewModel.onUsernameChange(it)
                 }
 
-                if (!isUsernameValid.first && isUsernameValid.second.isNotEmpty())
-                    AlphaErrorLabel(title = isUsernameValid.second)
+                if (!validationSchema.isUsernameValid.first &&
+                    validationSchema.isUsernameValid.second != "not touched")
+                    AlphaErrorLabel(title = validationSchema.isUsernameValid.second)
 
                 Text(
                     text = "Password",
@@ -145,7 +120,12 @@ fun CreateAccountActivity(navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     password = it
+                    createAccountViewModel.onPasswordChange(it)
                 }
+
+                if (!validationSchema.isPasswordValid.first &&
+                    validationSchema.isPasswordValid.second != "not touched")
+                    AlphaErrorLabel(title = validationSchema.isPasswordValid.second)
 
                 Text(
                     text = "Confirm Password",
@@ -160,7 +140,15 @@ fun CreateAccountActivity(navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     repeatedPassword = it
+                    createAccountViewModel.onConfirmationChange(
+                        pwd = password,
+                        confirm = it
+                    )
                 }
+
+                if (!validationSchema.isConfirmationValid.first &&
+                    validationSchema.isConfirmationValid.second != "not touched")
+                    AlphaErrorLabel(title = validationSchema.isConfirmationValid.second)
 
                 Column (
                     modifier = Modifier
@@ -169,7 +157,7 @@ fun CreateAccountActivity(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     AlphaPrimaryButton(
-                        enabled = isUsernameValid.first,
+                        enabled = validationSchema.isValidAccount,
                         title = "Create Account"
                     ) {
                         navController.navigate(LoginFormRoute)

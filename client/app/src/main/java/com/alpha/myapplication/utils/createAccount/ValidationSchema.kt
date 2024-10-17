@@ -1,24 +1,42 @@
 package com.alpha.myapplication.utils.createAccount
 
+
 class ValidationSchema {
 
-    var isUsernameValid: Boolean = false
+    var isUsernameValid = Pair(false, "not touched")
         private set
 
-    var isPasswordValid: Boolean = false
+    var isPasswordValid = Pair(false, "not touched")
         private set
 
-    var isConfirmationValid: Boolean = false
+    var isConfirmationValid = Pair(false, "not touched")
         private set
+
+    var isValidAccount: Boolean = false
+        private set
+        get() = isUsernameValid.first && isPasswordValid.first && isConfirmationValid.first
 
     fun checkUsername(username: String) {
-        if (username.trim().isEmpty() || username.trim().length < 5) {
-            isUsernameValid = false
-            return
+        isUsernameValid = when {
+            username.trim().isEmpty() ->  Pair(false, "The username is required")
+            username.trim().length < 5 -> Pair(false, "The username is too short")
+            else -> Pair(true, "")
         }
-
-        isUsernameValid = true
     }
 
+    fun checkPassword(pwd: String) {
+        isPasswordValid = when {
+            pwd.trim().isEmpty() ->  Pair(false, "The password is required")
+            pwd.trim().length < 8 -> Pair(false, "The password is too short")
+            else -> Pair(true, "")
+        }
+    }
+
+    fun checkConfirmPassword(pwd: String, confirm: String) {
+        isConfirmationValid = when {
+            pwd == confirm -> Pair(true, "")
+            else -> Pair(false, "Passwords must match")
+        }
+    }
 
 }
