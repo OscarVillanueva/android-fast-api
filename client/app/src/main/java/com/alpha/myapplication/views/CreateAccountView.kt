@@ -17,23 +17,37 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.alpha.myapplication.components.AlphaErrorLabel
 import com.alpha.myapplication.components.AlphaPrimaryButton
 import com.alpha.myapplication.components.AlphaTextField
 import com.alpha.myapplication.routes.LoginFormRoute
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun CreateAccountActivity(navController: NavController) {
+
+    var isFirstRenderUsername by remember {
+        mutableStateOf(true)
+    }
+
+    var isUsernameValid by remember {
+        mutableStateOf(Pair(false, ""))
+    }
+
     var username by remember {
         mutableStateOf("")
     }
@@ -44,6 +58,31 @@ fun CreateAccountActivity(navController: NavController) {
 
     var repeatedPassword by remember {
         mutableStateOf("")
+    }
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { username }
+            .debounce(500L)
+            .collect {
+                if(isFirstRenderUsername) {
+                    isFirstRenderUsername = false
+                    return@collect
+                }
+
+                isUsernameValid = when {
+                    it.trim().isEmpty() -> {
+                        Pair(false, "The username is required")
+                    }
+
+                    it.length < 5 -> {
+                        Pair(false, "The username is not long enough")
+                    }
+
+                    else -> {
+                        Pair(true, "")
+                    }
+                }
+            }
     }
 
     Scaffold(
@@ -90,6 +129,9 @@ fun CreateAccountActivity(navController: NavController) {
                     username = it
                 }
 
+                if (!isUsernameValid.first && isUsernameValid.second.isNotEmpty())
+                    AlphaErrorLabel(title = isUsernameValid.second)
+
                 Text(
                     text = "Password",
                     style = MaterialTheme.typography.titleLarge,
@@ -126,7 +168,10 @@ fun CreateAccountActivity(navController: NavController) {
                         .padding(horizontal = 0.dp, vertical = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
-                    AlphaPrimaryButton(title = "Create Account") {
+                    AlphaPrimaryButton(
+                        enabled = isUsernameValid.first,
+                        title = "Create Account"
+                    ) {
                         navController.navigate(LoginFormRoute)
                     }
 

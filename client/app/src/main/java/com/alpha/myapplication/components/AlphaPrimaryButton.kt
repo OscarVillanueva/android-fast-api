@@ -10,10 +10,12 @@ import com.alpha.myapplication.ui.theme.alphaPrimaryButton
 @Composable
 fun AlphaPrimaryButton(
     title: String,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Button(
+        enabled = enabled,
         modifier = modifier,
         colors = alphaPrimaryButton(),
         onClick = { onClick() }) {

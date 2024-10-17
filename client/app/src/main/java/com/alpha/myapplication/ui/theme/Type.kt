@@ -43,9 +43,9 @@ val Typography = Typography(
     labelSmall = TextStyle(
         fontFamily = fontFamily,
         fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
+        fontSize = 15.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp,
-        color = Color.White
-    )
+        color = Color(235, 68 ,68)
+    ),
 )
