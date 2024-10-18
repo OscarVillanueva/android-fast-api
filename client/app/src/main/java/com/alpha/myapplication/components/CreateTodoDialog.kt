@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -30,11 +29,13 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTodoDialog(
+    onCreate: (value: String) -> Unit,
     onCancel: () -> Unit
 ) {
     var todo by remember {
         mutableStateOf("")
     }
+
     Surface(
         color = Color(0x80000000)
     ) {
@@ -85,8 +86,10 @@ fun CreateTodoDialog(
                     }
 
                     AlphaPrimaryButton(
-                        title = "Add"
+                        title = "Add",
+                        enabled = todo.trim().isNotEmpty()
                     ) {
+                        onCreate(todo)
                     }
                 }
 

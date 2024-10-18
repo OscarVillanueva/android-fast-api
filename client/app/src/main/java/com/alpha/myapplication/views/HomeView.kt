@@ -104,6 +104,7 @@ fun HomeView(
 
             if (showCreateDialog)
                 CreateTodoDialog(
+                    onCreate = { todo -> homeViewModel.addTodo(todo) },
                     onCancel = { showCreateDialog = false }
                 )
 
