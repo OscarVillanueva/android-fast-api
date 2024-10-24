@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -29,6 +31,7 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTodoDialog(
+    isLoading: Boolean,
     onCreate: (value: String) -> Unit,
     onCancel: () -> Unit
 ) {
@@ -73,26 +76,34 @@ fun CreateTodoDialog(
                         .fillMaxWidth()
                         .padding(0.dp, 8.dp, 0.dp, 0.dp)
                 ){
-                    AlphaSecondaryButton(
-                        title = "Cancel",
-                        modifier = Modifier.padding(
-                            start = 0.dp,
-                            top = 0.dp,
-                            end = 10.dp,
-                            bottom = 0.dp
+                    if(isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.width(34.dp),
+                            color = Color(0xFF831DF5),
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
                         )
-                    ){
-                        onCancel()
                     }
+                    else {
+                        AlphaSecondaryButton(
+                            title = "Cancel",
+                            modifier = Modifier.padding(
+                                start = 0.dp,
+                                top = 0.dp,
+                                end = 10.dp,
+                                bottom = 0.dp
+                            )
+                        ){
+                            onCancel()
+                        }
 
-                    AlphaPrimaryButton(
-                        title = "Add",
-                        enabled = todo.trim().isNotEmpty()
-                    ) {
-                        onCreate(todo)
+                        AlphaPrimaryButton(
+                            title = "Add",
+                            enabled = todo.trim().isNotEmpty()
+                        ) {
+                            onCreate(todo)
+                        }
                     }
                 }
-
 
             }
         }

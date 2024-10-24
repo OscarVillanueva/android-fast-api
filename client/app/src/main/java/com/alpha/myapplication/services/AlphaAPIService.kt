@@ -5,6 +5,7 @@ import com.alpha.myapplication.models.body.CreateTodo
 import com.alpha.myapplication.models.body.LoginBody
 import com.alpha.myapplication.models.responses.AddTodoResponse
 import com.alpha.myapplication.models.responses.LoginResponse
+import com.alpha.myapplication.models.responses.TodosResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -25,4 +26,7 @@ interface AlphaAPIService {
         @Body todo: CreateTodo,
         @Header("Authorization") token: String,
     ): AddTodoResponse
+
+    @GET("/todo")
+    suspend fun fetchTodos(@Header("Authorization") token: String): List<TodosResponse>
 }

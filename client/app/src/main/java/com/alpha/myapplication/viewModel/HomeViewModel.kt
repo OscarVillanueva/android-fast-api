@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpha.myapplication.config.RetrofitInstance
 import com.alpha.myapplication.models.body.CreateTodo
+import com.alpha.myapplication.models.responses.TodosResponse
 import com.alpha.myapplication.types.HomeStates
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +21,9 @@ class HomeViewModel(private val dataStore: DataStore<Preferences>): ViewModel() 
 
     private val _homeState = MutableStateFlow(HomeStates.IDLE)
     val homeState: StateFlow<HomeStates> = _homeState
+
+    private val _todosState = MutableStateFlow<List<TodosResponse>>(emptyList())
+    val todosState: StateFlow<List<TodosResponse>> = _todosState
 
     fun logOut() {
         viewModelScope.launch {
@@ -33,6 +37,8 @@ class HomeViewModel(private val dataStore: DataStore<Preferences>): ViewModel() 
     fun addTodo(todo: String) {
         viewModelScope.launch {
             try {
+                _homeState.value = HomeStates.CREATING
+
                 val token = getToken()
 
                 val response = RetrofitInstance.api.createTodo(
@@ -40,7 +46,34 @@ class HomeViewModel(private val dataStore: DataStore<Preferences>): ViewModel() 
                     todo = CreateTodo(todo = todo)
                 )
 
-                Log.d("HomeViewModel", "id: ${response.id} -> todo: ${response.todo}")
+                val newTodo = TodosResponse(
+                    id = response.id,
+                    todo = response.todo,
+                    is_completed = false,
+                    belong_to = 0
+                )
+
+                _todosState.value += newTodo
+
+                _homeState.value = HomeStates.CREATED
+            }
+            catch (e: Exception) {
+                Log.d("HomeViewModel", "error $e")
+                _homeState.value = HomeStates.FAILURE
+            }
+        }
+    }
+
+    fun getTodos() {
+        viewModelScope.launch {
+            try {
+                val token = getToken()
+
+                val response = RetrofitInstance.api.fetchTodos(
+                    token = "Bearer $token"
+                )
+
+                _todosState.value = response
             }
             catch (e: Exception) {
                 Log.d("HomeViewModel", "error $e")

@@ -1,6 +1,8 @@
 package com.alpha.myapplication.views
 
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,17 +53,36 @@ fun HomeView(
     navController: NavController,
     homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(LocalContext.current.dataStore))
 ) {
+    val context = LocalContext.current
 
     val homeState by homeViewModel.homeState.collectAsState()
+    val todosState by homeViewModel.todosState.collectAsState()
 
     var showCreateDialog by remember {
         mutableStateOf(false)
     }
 
     LaunchedEffect(homeState) {
-        if (homeState == HomeStates.LOG_OUT) {
-            navController.navigate(LoginFormRoute)
+        when(homeState) {
+            HomeStates.LOG_OUT -> navController.navigate(LoginFormRoute)
+            HomeStates.CREATED -> showCreateDialog = false
+            HomeStates.FAILURE -> {
+                Toast.makeText(
+                    context,
+                    "An error occurred, please try again",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            else -> {}
         }
+    }
+
+    LaunchedEffect(Unit) {
+        homeViewModel.getTodos()
+    }
+
+    fun handleCheckChange(id: Int, value: Boolean) {
+        Log.d("HomeView", "$id -> $value")
     }
 
     Scaffold(
@@ -97,13 +118,19 @@ fun HomeView(
                     .padding(horizontal = 16.dp, vertical = 16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                Todo()
-                Todo()
-                Todo()
+                todosState.map { todo ->
+                    Todo(
+                        id = todo.id,
+                        title = todo.todo
+                    ) { id, value ->
+                        handleCheckChange(id, value)
+                    }
+                }
             }
 
             if (showCreateDialog)
                 CreateTodoDialog(
+                    isLoading = homeState == HomeStates.CREATING,
                     onCreate = { todo -> homeViewModel.addTodo(todo) },
                     onCancel = { showCreateDialog = false }
                 )
