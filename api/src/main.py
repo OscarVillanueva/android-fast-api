@@ -191,9 +191,13 @@ async def root(
    
     try:
         secret = os.getenv("JWT_SECRET")
-        jwt.decode(authorization.replace("Bearer ", ""), secret, algorithms=["HS256"])
+        token = jwt.decode(authorization.replace("Bearer ", ""), secret, algorithms=["HS256"])
         
-        result = await db.execute(select(TodoDTO).where(TodoDTO.id == todo_id))
+        result = await db.execute(select(TodoDTO).where(
+                    and_(
+                        TodoDTO.id == todo_id,
+                        TodoDTO.belong_to == token['id']
+                    )))
         
         dbTodo = result.scalar_one_or_none()
 
@@ -204,7 +208,12 @@ async def root(
 
         result = await db.execute(
             update(TodoDTO)
-                .where(TodoDTO.id == todo_id)
+                .where(
+                    and_(
+                        TodoDTO.id == todo_id,
+                        TodoDTO.belong_to == token['id']
+                    )
+                ) 
                 .values(is_completed=status.status)
         )
 
@@ -238,7 +247,10 @@ async def root(
         if not token["id"]:
             raise Exception("Invalid token")
                 
-        result = await db.execute(select(TodoDTO).where(TodoDTO.id == todo_id))
+        result = await db.execute(select(TodoDTO).where(and_(
+                        TodoDTO.id == todo_id,
+                        TodoDTO.belong_to == token['id']
+                    )))
         
         dbTodo = result.scalar_one_or_none()
 

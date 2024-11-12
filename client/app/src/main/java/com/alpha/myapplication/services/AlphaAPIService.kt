@@ -3,6 +3,7 @@ package com.alpha.myapplication.services
 import com.alpha.myapplication.models.body.CreateAccountBody
 import com.alpha.myapplication.models.body.CreateTodo
 import com.alpha.myapplication.models.body.LoginBody
+import com.alpha.myapplication.models.body.UpdateTodoBody
 import com.alpha.myapplication.models.responses.AddTodoResponse
 import com.alpha.myapplication.models.responses.LoginResponse
 import com.alpha.myapplication.models.responses.TodosResponse
@@ -10,6 +11,8 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface AlphaAPIService {
     @GET("/")
@@ -29,4 +32,11 @@ interface AlphaAPIService {
 
     @GET("/todo")
     suspend fun fetchTodos(@Header("Authorization") token: String): List<TodosResponse>
+
+    @PUT("/todo/{todo}")
+    suspend fun updateTodo(
+        @Path("todo") todo: String,
+        @Header("Authorization") token: String,
+        @Body updateTodoBody: UpdateTodoBody
+    ): TodosResponse
 }

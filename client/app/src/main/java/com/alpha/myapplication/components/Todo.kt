@@ -1,6 +1,5 @@
 package com.alpha.myapplication.components
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -17,12 +16,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun Todo(
     id: Int,
     title: String,
+    checked: Boolean,
     onCheckChange: (id: Int, value: Boolean) -> Unit
 ) {
     Row (
@@ -35,8 +37,14 @@ fun Todo(
             .fillMaxWidth()
             .background(color = Color(0xFF21222D))
     ){
-        Checkbox(checked = false, onCheckedChange = { value -> onCheckChange(id, value) })
-        Text(text = title)
+        Checkbox(checked = checked, onCheckedChange = { value -> onCheckChange(id, value) })
+        Text(
+            text = title,
+            style = TextStyle(
+                textDecoration =
+                if (checked) TextDecoration.LineThrough
+                else TextDecoration.None)
+        )
         IconButton(onClick = { /*TODO*/ }) {
             Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete todo")
         }

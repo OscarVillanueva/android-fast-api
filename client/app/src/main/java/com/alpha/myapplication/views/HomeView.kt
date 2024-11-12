@@ -121,7 +121,8 @@ fun HomeView(
                 todosState.map { todo ->
                     Todo(
                         id = todo.id,
-                        title = todo.todo
+                        title = todo.todo,
+                        checked = todo.is_completed
                     ) { id, value ->
                         handleCheckChange(id, value)
                     }

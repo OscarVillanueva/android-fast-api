@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpha.myapplication.config.RetrofitInstance
 import com.alpha.myapplication.models.body.CreateTodo
+import com.alpha.myapplication.models.body.UpdateTodoBody
 import com.alpha.myapplication.models.responses.TodosResponse
 import com.alpha.myapplication.types.HomeStates
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,6 +75,29 @@ class HomeViewModel(private val dataStore: DataStore<Preferences>): ViewModel() 
                 )
 
                 _todosState.value = response
+            }
+            catch (e: Exception) {
+                Log.d("HomeViewModel", "error $e")
+            }
+        }
+    }
+
+    fun updateTodo(id: Int, status: Boolean) {
+        viewModelScope.launch {
+            try {
+                val token = getToken()
+
+                RetrofitInstance.api.updateTodo(
+                    todo = "$id",
+                    token = "Bearer $token",
+                    updateTodoBody = UpdateTodoBody(status = status)
+                )
+
+                _todosState.value = _todosState.value.map { prev ->
+                    if (prev.id == id) prev.is_completed = status
+
+                    prev
+                }
             }
             catch (e: Exception) {
                 Log.d("HomeViewModel", "error $e")
