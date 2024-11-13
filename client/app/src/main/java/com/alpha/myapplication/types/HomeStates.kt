@@ -6,4 +6,6 @@ enum class HomeStates {
     CREATING,
     CREATED,
     FAILURE,
+    UPDATING,
+    DELETING,
 }

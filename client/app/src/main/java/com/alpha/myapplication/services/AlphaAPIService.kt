@@ -5,9 +5,11 @@ import com.alpha.myapplication.models.body.CreateTodo
 import com.alpha.myapplication.models.body.LoginBody
 import com.alpha.myapplication.models.body.UpdateTodoBody
 import com.alpha.myapplication.models.responses.AddTodoResponse
+import com.alpha.myapplication.models.responses.DeleteTodoResponse
 import com.alpha.myapplication.models.responses.LoginResponse
 import com.alpha.myapplication.models.responses.TodosResponse
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -15,9 +17,6 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface AlphaAPIService {
-    @GET("/")
-    suspend fun getHelloWorldResponse(): String
-
     @POST("/login")
     suspend fun getLoginToken(@Body loginBody: LoginBody): LoginResponse
 
@@ -39,4 +38,10 @@ interface AlphaAPIService {
         @Header("Authorization") token: String,
         @Body updateTodoBody: UpdateTodoBody
     ): TodosResponse
+
+    @DELETE("/todo/{todo}")
+    suspend fun deleteTodo(
+        @Path("todo") todo: String,
+        @Header("Authorization") token: String,
+    ): DeleteTodoResponse
 }

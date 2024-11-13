@@ -19,12 +19,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.alpha.myapplication.ui.theme.Fonts.Montserrat
 
 @Composable
 fun Todo(
     id: Int,
     title: String,
     checked: Boolean,
+    isLoading: Boolean,
+    onDelete: (id: Int) -> Unit,
     onCheckChange: (id: Int, value: Boolean) -> Unit
 ) {
     Row (
@@ -37,15 +40,23 @@ fun Todo(
             .fillMaxWidth()
             .background(color = Color(0xFF21222D))
     ){
-        Checkbox(checked = checked, onCheckedChange = { value -> onCheckChange(id, value) })
+        Checkbox(
+            enabled = !isLoading,
+            checked = checked,
+            onCheckedChange = { value -> onCheckChange(id, value) }
+        )
         Text(
             text = title,
             style = TextStyle(
+                fontFamily = Montserrat.getFont(),
                 textDecoration =
                 if (checked) TextDecoration.LineThrough
                 else TextDecoration.None)
         )
-        IconButton(onClick = { /*TODO*/ }) {
+        IconButton(
+            enabled = !isLoading,
+            onClick = { onDelete(id) }
+        ) {
             Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete todo")
         }
     }

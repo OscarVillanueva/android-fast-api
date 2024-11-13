@@ -85,6 +85,8 @@ class HomeViewModel(private val dataStore: DataStore<Preferences>): ViewModel() 
     fun updateTodo(id: Int, status: Boolean) {
         viewModelScope.launch {
             try {
+                _homeState.value = HomeStates.UPDATING
+
                 val token = getToken()
 
                 RetrofitInstance.api.updateTodo(
@@ -98,9 +100,35 @@ class HomeViewModel(private val dataStore: DataStore<Preferences>): ViewModel() 
 
                     prev
                 }
+
+                _homeState.value = HomeStates.IDLE
             }
             catch (e: Exception) {
                 Log.d("HomeViewModel", "error $e")
+                _homeState.value = HomeStates.FAILURE
+            }
+        }
+    }
+
+    fun deleteTodo(id: Int) {
+        viewModelScope.launch {
+            try {
+                _homeState.value = HomeStates.DELETING
+
+                val token = getToken()
+
+                RetrofitInstance.api.deleteTodo(
+                    todo = "$id",
+                    token = "Bearer $token"
+                )
+
+                _todosState.value = _todosState.value.filter { it.id != id }
+
+                _homeState.value = HomeStates.IDLE
+            }
+            catch (e: Exception) {
+                Log.d("HomeViewModel", "error $e")
+                _homeState.value = HomeStates.FAILURE
             }
         }
     }

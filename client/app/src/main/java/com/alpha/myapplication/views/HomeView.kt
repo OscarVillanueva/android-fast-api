@@ -1,7 +1,5 @@
 package com.alpha.myapplication.views
 
-
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -82,7 +80,7 @@ fun HomeView(
     }
 
     fun handleCheckChange(id: Int, value: Boolean) {
-        Log.d("HomeView", "$id -> $value")
+        homeViewModel.updateTodo(id, status = value)
     }
 
     Scaffold(
@@ -122,7 +120,9 @@ fun HomeView(
                     Todo(
                         id = todo.id,
                         title = todo.todo,
-                        checked = todo.is_completed
+                        isLoading = homeState == HomeStates.UPDATING,
+                        checked = todo.is_completed,
+                        onDelete = { id -> homeViewModel.deleteTodo(id) }
                     ) { id, value ->
                         handleCheckChange(id, value)
                     }
@@ -131,7 +131,7 @@ fun HomeView(
 
             if (showCreateDialog)
                 CreateTodoDialog(
-                    isLoading = homeState == HomeStates.CREATING,
+                    isLoading = homeState == HomeStates.CREATING || homeState == HomeStates.DELETING,
                     onCreate = { todo -> homeViewModel.addTodo(todo) },
                     onCancel = { showCreateDialog = false }
                 )
